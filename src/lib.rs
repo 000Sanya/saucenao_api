@@ -26,25 +26,25 @@ impl SaucenaoRequest {
         };
 
         let query = query
-            .query(&("output_type", (self.output_type.clone() as u8)))
-            .query(&("api_key", &self.api_key))
-            .query(&("testmode", self.testmode))
-            .query(&db)
-            .query(&("numres", self.numres));
+            .query(&[("output_type", (self.output_type.clone() as u8))])
+            .query(&[("api_key", &self.api_key)])
+            .query(&[("testmode", self.testmode)])
+            .query(&[db])
+            .query(&[("numres", self.numres)]);
 
         let query = match self.input {
             ImageSource::Image(ref path) => {
                 let form = Form::new().file("image.png", Path::new(path))?;
                 query.multipart(form)
             },
-            ImageSource::Url(ref url) => query.query(&("url", url.clone())),
+            ImageSource::Url(ref url) => query.query(&[("url", url.clone())]),
         };
 
-        println!("{:?}", query.)
-
-        let res = query
-            .send()?
-            .json()?;
+        let req = query.build()?;
+        let res = client
+            .execute(req)?
+            .text()?;
+        let res = serde_json::from_str(&res)?;
         Ok(res)
     }
 }
